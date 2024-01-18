@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/aadhar"
+        android:title="Aadhar" />
+    <item
+        android:id="@+id/pan"
+        android:title="PAN" />
+    <item
+        android:id="@+id/drlicence"
+        android:title="Driving Licence" />
+    <item
+        android:id="@+id/more"
+        android:title="More ..." />
+</menu>
