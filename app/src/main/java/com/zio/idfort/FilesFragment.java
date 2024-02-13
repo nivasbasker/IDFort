@@ -1,29 +1,27 @@
 package com.zio.idfort;
 
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.appcompat.widget.PopupMenu;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.room.Room;
 
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.PopupWindow;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.snackbar.Snackbar;
 import com.zio.idfort.data.DocsDAO;
 import com.zio.idfort.data.DocsDB;
 import com.zio.idfort.data.DocsEntity;
 import com.zio.idfort.databinding.FragmentFilesBinding;
+import com.zio.idfort.ui.AddDetails;
 import com.zio.idfort.utils.Constants;
 
 import java.util.ArrayList;
@@ -62,9 +60,13 @@ public class FilesFragment extends Fragment {
         PopupMenu.OnMenuItemClickListener listener = new PopupMenu.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
-                Intent i = new Intent(getContext(), AddDetails.class);
-                i.putExtra("Name", item.getTitle());
-                startActivity(i);
+                if (item.getTitle().toString().equals("Aadhaar")) {
+                    Intent i = new Intent(getContext(), AddDetails.class);
+                    i.putExtra("Name", item.getTitle());
+                    startActivity(i);
+                } else {
+                    Snackbar.make(binding.getRoot(), "Feature coming soon", Snackbar.LENGTH_SHORT).show();
+                }
                 return true;
             }
         };
@@ -99,7 +101,6 @@ public class FilesFragment extends Fragment {
         rvDocs.setAdapter(adapter);
         rvDocs.setLayoutManager(new GridLayoutManager(getContext(), 2));
     }
-
 
 
     @Override

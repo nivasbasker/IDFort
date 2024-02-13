@@ -1,8 +1,5 @@
-package com.zio.idfort;
+package com.zio.idfort.ui;
 
-import static java.security.AccessController.getContext;
-
-import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
@@ -23,6 +20,7 @@ import android.widget.PopupWindow;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.zio.idfort.R;
 import com.zio.idfort.data.DocsDAO;
 import com.zio.idfort.data.DocsDB;
 import com.zio.idfort.data.DocsEntity;
@@ -206,7 +204,7 @@ public class AddDetails extends AppCompatActivity {
             finish();
 
         } else {
-            Toast.makeText(this, "Something Went Wrong, Please try again later", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Please fill the personal identification information (PII) manually", Toast.LENGTH_SHORT).show();
         }
     }
 

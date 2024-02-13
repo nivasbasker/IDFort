@@ -1,7 +1,8 @@
-package com.zio.idfort;
+package com.zio.idfort.ui;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.camera.core.AspectRatio;
 import androidx.camera.core.Camera;
 import androidx.camera.core.CameraSelector;
 import androidx.camera.core.ExperimentalGetImage;
@@ -9,11 +10,17 @@ import androidx.camera.core.ImageCapture;
 import androidx.camera.core.ImageCaptureException;
 import androidx.camera.core.ImageProxy;
 import androidx.camera.core.Preview;
+import androidx.camera.core.resolutionselector.AspectRatioStrategy;
+import androidx.camera.core.resolutionselector.ResolutionSelector;
+import androidx.camera.core.resolutionselector.ResolutionStrategy;
 import androidx.camera.lifecycle.ProcessCameraProvider;
 import androidx.camera.view.PreviewView;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
@@ -21,14 +28,16 @@ import android.media.Image;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.util.Size;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.material.snackbar.Snackbar;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.zio.idfort.databinding.ActivityCamBinding;
 import com.zio.idfort.utils.Constants;
@@ -42,30 +51,40 @@ import java.util.concurrent.ExecutionException;
 
 public class CamActivity extends AppCompatActivity {
 
+    private static final int CAMERA_PERMISSION_REQUEST_CODE = 56;
     private PreviewView viewFinder;
     private FrameLayout guideOverlay;
     private ImageButton captureButton;
+
+    private TextView error;
+
     ActivityCamBinding binding;
 
     private ProcessCameraProvider cameraProvider = null;
     private ImageCapture imageCapture;
     private ProgressBar pbar;
 
-
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        binding = ActivityCamBinding.inflate(getLayoutInflater());
-        setContentView(binding.getRoot());
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == CAMERA_PERMISSION_REQUEST_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                build_cam();
+                // Camera permission granted, you can use the camera
+            } else {
+                // Camera permission denied, handle accordingly
+                error.setText("Please allow camera permissions manually in settings");
+            }
+        }
+    }
 
-        viewFinder = binding.viewFinder;
-        guideOverlay = binding.guideOverlay;
-        captureButton = binding.captureButton;
-        pbar = binding.progressBar;
+    private void build_cam() {
+        ResolutionStrategy strategy = new ResolutionStrategy(new Size(1500, 2000), ResolutionStrategy.FALLBACK_RULE_CLOSEST_LOWER);
+        ResolutionSelector res = new ResolutionSelector.Builder().setResolutionStrategy(strategy).build();
 
-        set_layout();
-
-        imageCapture = new ImageCapture.Builder().build();
+        imageCapture = new ImageCapture.Builder()
+                .setResolutionSelector(res)
+                .build();
 
         configCamX();
 
@@ -83,6 +102,7 @@ public class CamActivity extends AppCompatActivity {
 
                     Log.d(Constants.TAG, "Captured image");
                     Bitmap originalBitmap = correction(imageProxyToBitmap(image), image.getImageInfo().getRotationDegrees());
+                    saveBitmapToFile(originalBitmap, new File(getCacheDir(), "org.jpg"));
                     Bitmap croppedBitmap = cropBitmap(originalBitmap);
                     Bitmap finalBitmap = reduceBitmapSize(croppedBitmap);
 
@@ -92,6 +112,7 @@ public class CamActivity extends AppCompatActivity {
                     image.close();
                     Log.d(Constants.TAG, "sending back results");
                     onWorkDone(true);
+
                 }
 
                 @Override
@@ -101,6 +122,28 @@ public class CamActivity extends AppCompatActivity {
                 }
             });
         });
+    }
+
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        binding = ActivityCamBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
+
+        viewFinder = binding.viewFinder;
+        guideOverlay = binding.guideOverlay;
+        captureButton = binding.captureButton;
+        pbar = binding.progressBar;
+        error = binding.errorTxt;
+
+        //set_layout();
+
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            // Camera permission is granted
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, CAMERA_PERMISSION_REQUEST_CODE);
+        } else build_cam();
 
     }
 
@@ -150,15 +193,24 @@ public class CamActivity extends AppCompatActivity {
 
         // Configure CameraX
 
-        Preview preview = new Preview.Builder().build();
+
+        //req camera provider
         ListenableFuture<ProcessCameraProvider> cameraProviderFuture = ProcessCameraProvider.getInstance(this);
 
         cameraProviderFuture.addListener(() -> {
             try {
                 cameraProvider = cameraProviderFuture.get();
+
+                //build preview
+                Preview preview = new Preview.Builder()
+                        .build();
                 preview.setSurfaceProvider(viewFinder.getSurfaceProvider());
+
+
                 CameraSelector cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA;
+
                 Camera camera = cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageCapture);
+                camera.getCameraControl().setLinearZoom(0.2f);
 
             } catch (ExecutionException | InterruptedException e) {
                 e.printStackTrace();
@@ -178,13 +230,13 @@ public class CamActivity extends AppCompatActivity {
     private Bitmap cropBitmap(Bitmap originalBitmap) {
         int width = (int) (originalBitmap.getWidth());
 
-        int left = (int) (width * 0.1);
-        int top = (int) ((originalBitmap.getHeight() - (width * 0.53)) / 2);
+        int left = 0;
+        int top = (int) (width * 5 / 12);
         Log.d(Constants.TAG, "Cropping in progress : width - " + width + "\n"
                 + "left - " + left + "\n"
                 + "top - " + top + "\n");
 
-        return Bitmap.createBitmap(originalBitmap, left, top, (int) (width * 0.8), (int) (width * 0.53));
+        return Bitmap.createBitmap(originalBitmap, left, top, width, width / 2);
     }
 
     private void saveBitmapToFile(Bitmap croppedBitmap, File outputFile) {

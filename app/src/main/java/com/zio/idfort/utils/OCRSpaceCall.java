@@ -25,7 +25,7 @@ public class OCRSpaceCall {
 
     private final String URL = "https://api.ocr.space/parse/image";//"https://httpbin.org/post";
     private final String TESTURL = "https://httpbin.org/post";
-    private final String KEY = "K84751919488957";
+    private final String KEY = "K85037584088957";
 
     private final RequestQueue mRequestQue;
     Context context;
@@ -103,6 +103,7 @@ public class OCRSpaceCall {
                 Map<String, String> param = new HashMap<>();
                 //param.put("url", "http://dl.a9t9.com/ocrbenchmark/eng.png");
                 param.put("base64Image", base64);
+                param.put("apikey",KEY);
                 //param.put("detectOrientation", "true");
                 //param.put("scale", "true");
                 return param;

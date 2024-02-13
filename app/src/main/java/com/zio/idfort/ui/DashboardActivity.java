@@ -1,4 +1,4 @@
-package com.zio.idfort;
+package com.zio.idfort.ui;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -10,6 +10,9 @@ import android.os.Bundle;
 import android.view.MenuItem;
 
 import com.google.android.material.navigation.NavigationBarView;
+import com.zio.idfort.FilesFragment;
+import com.zio.idfort.ProfileFragment;
+import com.zio.idfort.R;
 import com.zio.idfort.databinding.ActivityDashboardBinding;
 
 public class DashboardActivity extends AppCompatActivity {

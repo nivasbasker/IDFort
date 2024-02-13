@@ -17,12 +17,12 @@
         android:theme="@style/Base.Theme.IDFort"
         tools:targetApi="31">
         <activity
-            android:name=".CamActivity"
+            android:name=".ui.CamActivity"
             android:exported="true">
 
         </activity>
         <activity
-            android:name=".LoginActivity"
+            android:name=".ui.LoginActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -30,12 +30,12 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".DashboardActivity"
+            android:name=".ui.DashboardActivity"
             android:exported="true">
 
         </activity>
         <activity
-            android:name=".AddDetails"
+            android:name=".ui.AddDetails"
             android:exported="false" />
 
         <provider
